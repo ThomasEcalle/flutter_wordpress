@@ -9,7 +9,9 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="73f4dbd7-3b98-4a12-b0ae-5e3c44fac77c" name="Default Changelist" comment="CreateUser Added!!!" />
+    <list default="true" id="73f4dbd7-3b98-4a12-b0ae-5e3c44fac77c" name="Default Changelist" comment="Add simple hard-coded jwt token handling">
+      <change beforePath="$PROJECT_DIR$/flutter_wordpress.iml" beforeDir="false" afterPath="$PROJECT_DIR$/flutter_wordpress.iml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -137,6 +139,9 @@
       </list>
     </option>
   </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
   <component name="ProjectFrameBounds" extendedState="6">
     <option name="x" value="85" />
     <option name="y" value="25" />
@@ -184,15 +189,15 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "cidr.known.project.marker": "true",
-    "dart.analysis.tool.window.visible": "false",
-    "settings.editor.selected.configurable": "flutter.settings",
-    "show.migrate.to.gradle.popup": "false"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;dart.analysis.tool.window.visible&quot;: &quot;false&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;flutter.settings&quot;,
+    &quot;show.migrate.to.gradle.popup&quot;: &quot;false&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager">
     <configuration name="main.dart" type="FlutterRunConfigurationType" factoryName="Flutter">
       <option name="filePath" value="$PROJECT_DIR$/example/lib/main.dart" />
@@ -346,6 +351,17 @@
       <window_info anchor="bottom" id="Android Profiler" order="11" show_stripe_button="false" />
     </layout-to-restore>
   </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="PostUpdate Added!" />
     <MESSAGE value="PostDelete Added!" />
@@ -356,7 +372,8 @@
     <MESSAGE value="Create, Update and Delete Comment. Create, Update and Delete Post. Update and Delete User." />
     <MESSAGE value="Final Touches!!" />
     <MESSAGE value="CreateUser Added!!!" />
-    <option name="LAST_COMMIT_MESSAGE" value="CreateUser Added!!!" />
+    <MESSAGE value="Add simple hard-coded jwt token handling" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add simple hard-coded jwt token handling" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/lib/schemas/category.dart" />

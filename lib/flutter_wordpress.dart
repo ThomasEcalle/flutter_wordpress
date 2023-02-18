@@ -95,7 +95,10 @@ class WordPress {
           _urlHeader['Authorization'] = 'Basic $base64';
           break;
         case WordPressAuthenticator.JWT:
-          _urlHeader['Authorization'] = 'Bearer $token';
+          if (token != null) {
+            _token = token;
+            _urlHeader['Authorization'] = 'Bearer $token';
+          }
           break;
       }
     }
@@ -316,6 +319,8 @@ class WordPress {
     final StringBuffer url = new StringBuffer(_baseUrl + URL_WP_BASE + "/" + postType);
 
     url.write(postParams.toString());
+
+    print('toto Headers : $_urlHeader');
 
     final response = await http.get(Uri.parse(url.toString()), headers: _urlHeader);
 
