@@ -81,10 +81,9 @@ class WordPress {
     required WordPressAuthenticator authenticator,
     String? adminName,
     String? adminKey,
+    String? token,
   }) {
-    this._baseUrl = baseUrl.endsWith('/')
-        ? baseUrl.substring(0, baseUrl.length - 1)
-        : baseUrl;
+    this._baseUrl = baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
 
     this._authenticator = authenticator;
 
@@ -96,7 +95,7 @@ class WordPress {
           _urlHeader['Authorization'] = 'Basic $base64';
           break;
         case WordPressAuthenticator.JWT:
-          //TODO: Implement JWT Admin authentication
+          _urlHeader['Authorization'] = 'Bearer $token';
           break;
       }
     }
@@ -199,9 +198,7 @@ class WordPress {
 
     if (response.statusCode >= 200 && response.statusCode < 300) {
       final jsonStr = json.decode(response.body);
-      if (jsonStr.length == 0)
-        throw new WordPressError(
-            code: 'wp_empty_list', message: "No users found");
+      if (jsonStr.length == 0) throw new WordPressError(code: 'wp_empty_list', message: "No users found");
 
       return User.fromJson(jsonStr[0]);
     } else {
@@ -227,14 +224,11 @@ class WordPress {
 
     if (response.statusCode >= 200 && response.statusCode < 300) {
       final jsonStr = json.decode(response.body);
-      if (jsonStr.length == 0)
-        throw new WordPressError(
-            code: 'wp_empty_user', message: "No user found");
+      if (jsonStr.length == 0) throw new WordPressError(code: 'wp_empty_user', message: "No user found");
       return User.fromJson(jsonStr);
     } else {
       try {
-        WordPressError err =
-            WordPressError.fromJson(json.decode(response.body));
+        WordPressError err = WordPressError.fromJson(json.decode(response.body));
         throw err;
       } catch (e) {
         throw new WordPressError(message: response.body);
@@ -305,8 +299,7 @@ class WordPress {
         commentsForPostIDs[post.id!] = [];
       }
       if (setCategories) {
-        post.categoryIDs
-            ?.forEach((id) => categoriesByID[id] = Category(id: id));
+        post.categoryIDs?.forEach((id) => categoriesByID[id] = Category(id: id));
       }
       if (setTags) {
         post.tagIDs?.forEach((id) => tagsByID[id] = Tag(id: id));
@@ -320,13 +313,11 @@ class WordPress {
       return post;
     };
 
-    final StringBuffer url =
-        new StringBuffer(_baseUrl + URL_WP_BASE + "/" + postType);
+    final StringBuffer url = new StringBuffer(_baseUrl + URL_WP_BASE + "/" + postType);
 
     url.write(postParams.toString());
 
-    final response =
-        await http.get(Uri.parse(url.toString()), headers: _urlHeader);
+    final response = await http.get(Uri.parse(url.toString()), headers: _urlHeader);
 
     if (response.statusCode >= 200 && response.statusCode < 300) {
       final list = json.decode(response.body);
@@ -349,12 +340,9 @@ class WordPress {
       var handleGettingAuthors = ({bool setAuthor = false}) async {
         if (setAuthor) {
           var aids = authorIDForPostIDs.values.toList();
-          FetchUsersResult authResult =
-              await fetchUsers(params: ParamsUserList(includeUserIDs: aids));
-          authorsByID = Map.fromIterable(authResult.users,
-              key: (u) => u.id, value: (u) => u);
-          if (authResult.users.length != authResult.totalUsers &&
-              authResult.totalUsers != null) {
+          FetchUsersResult authResult = await fetchUsers(params: ParamsUserList(includeUserIDs: aids));
+          authorsByID = Map.fromIterable(authResult.users, key: (u) => u.id, value: (u) => u);
+          if (authResult.users.length != authResult.totalUsers && authResult.totalUsers != null) {
             var stride = authResult.users.length;
             var numOfCalls = (authResult.totalUsers! / stride) + 1;
             for (var i = 2; i <= numOfCalls; i++) {
@@ -473,8 +461,7 @@ class WordPress {
         if (setFeaturedMedia) {
           var fids = featuredMediaIDForPostIDs.values.toList();
           List<Media> media = await this.fetchMediaList(
-            params: ParamsMediaList(
-                includeMediaIDs: fids, perPage: bulkBatchNum, pageNum: 1),
+            params: ParamsMediaList(includeMediaIDs: fids, perPage: bulkBatchNum, pageNum: 1),
           );
           if (media.length != 0) {
             media.forEach((fm) {
@@ -552,8 +539,7 @@ class WordPress {
           if (post.comments != null) {
             post.comments?.forEach((comment) {
               if (comment.parent == 0)
-                post.commentsHierarchy?.add(
-                    _commentHierarchyBuilder(post.comments ?? [], comment));
+                post.commentsHierarchy?.add(_commentHierarchyBuilder(post.comments ?? [], comment));
             });
           }
         }
@@ -561,8 +547,7 @@ class WordPress {
         if (fetchCategories) {
           post.categories = [];
           post.categoryIDs?.forEach((catid) {
-            if (categoriesByID[catid] != null)
-              post.categories?.add(categoriesByID[catid]!);
+            if (categoriesByID[catid] != null) post.categories?.add(categoriesByID[catid]!);
           });
         }
         //handle tags
@@ -574,8 +559,7 @@ class WordPress {
         }
         //handle featured media
         if (fetchFeaturedMedia) {
-          post.featuredMedia =
-              featuredMediaByID[featuredMediaIDForPostIDs[post.id]];
+          post.featuredMedia = featuredMediaByID[featuredMediaIDForPostIDs[post.id]];
         }
         //handle attachments
         if (fetchAttachments) {
@@ -607,8 +591,7 @@ class WordPress {
       return postsByID.values.toList();
     } else {
       try {
-        WordPressError err =
-            WordPressError.fromJson(json.decode(response.body));
+        WordPressError err = WordPressError.fromJson(json.decode(response.body));
         throw err;
       } catch (e) {
         throw new WordPressError(message: response.body);
@@ -623,8 +606,8 @@ class WordPress {
     List<Comment> commentList,
     Comment comment,
   ) {
-    final childComments = commentList.where((ele) =>
-        ele.id != comment.id && ele.parent != 0 && ele.parent == comment.id);
+    final childComments =
+        commentList.where((ele) => ele.id != comment.id && ele.parent != 0 && ele.parent == comment.id);
 
     if (childComments.length == 0) {
       return new CommentHierarchy(comment: comment);
@@ -650,8 +633,7 @@ class WordPress {
 
     url.write(params.toString());
 
-    final response =
-        await http.get(Uri.parse(url.toString()), headers: _urlHeader);
+    final response = await http.get(Uri.parse(url.toString()), headers: _urlHeader);
 
     if (response.statusCode >= 200 && response.statusCode < 300) {
       List<Page> pages = [];
@@ -662,8 +644,7 @@ class WordPress {
       return pages;
     } else {
       try {
-        WordPressError err =
-            WordPressError.fromJson(json.decode(response.body));
+        WordPressError err = WordPressError.fromJson(json.decode(response.body));
         throw err;
       } catch (e) {
         throw new WordPressError(message: response.body);
@@ -716,8 +697,7 @@ class WordPress {
       return FetchUsersResult(users, totalUsers);
     } else {
       try {
-        WordPressError err =
-            WordPressError.fromJson(json.decode(response.body));
+        WordPressError err = WordPressError.fromJson(json.decode(response.body));
         throw err;
       } catch (e) {
         throw new WordPressError(message: response.body);
@@ -751,8 +731,7 @@ class WordPress {
       return comments;
     } else {
       try {
-        WordPressError err =
-            WordPressError.fromJson(json.decode(response.body));
+        WordPressError err = WordPressError.fromJson(json.decode(response.body));
         throw err;
       } catch (e) {
         throw new WordPressError(message: response.body);
@@ -787,14 +766,12 @@ class WordPress {
       });
 
       comments.forEach((comment) {
-        if (comment.parent == 0)
-          commentsHierarchy.add(_commentHierarchyBuilder(comments, comment));
+        if (comment.parent == 0) commentsHierarchy.add(_commentHierarchyBuilder(comments, comment));
       });
       return commentsHierarchy;
     } else {
       try {
-        WordPressError err =
-            WordPressError.fromJson(json.decode(response.body));
+        WordPressError err = WordPressError.fromJson(json.decode(response.body));
         throw err;
       } catch (e) {
         throw new WordPressError(message: response.body);
@@ -835,16 +812,14 @@ class WordPress {
         final totalPages = int.parse(response.headers["x-wp-totalpages"]!);
 
         for (int i = params.pageNum + 1; i <= totalPages; ++i) {
-          categories.addAll(
-              await fetchCategories(params: params.copyWith(pageNum: i)));
+          categories.addAll(await fetchCategories(params: params.copyWith(pageNum: i)));
         }
       }
 
       return categories;
     } else {
       try {
-        WordPressError err =
-            WordPressError.fromJson(json.decode(response.body));
+        WordPressError err = WordPressError.fromJson(json.decode(response.body));
         throw err;
       } catch (e) {
         throw new WordPressError(message: response.body);
@@ -876,8 +851,7 @@ class WordPress {
       return tags;
     } else {
       try {
-        WordPressError err =
-            WordPressError.fromJson(json.decode(response.body));
+        WordPressError err = WordPressError.fromJson(json.decode(response.body));
         throw err;
       } catch (e) {
         throw new WordPressError(message: response.body);
@@ -909,8 +883,7 @@ class WordPress {
       return media;
     } else {
       try {
-        WordPressError err =
-            WordPressError.fromJson(json.decode(response.body));
+        WordPressError err = WordPressError.fromJson(json.decode(response.body));
         throw err;
       } catch (e) {
         throw new WordPressError(message: response.body);
@@ -940,8 +913,7 @@ class WordPress {
       return Post.fromJson(json.decode(response.body));
     } else {
       try {
-        WordPressError err =
-            WordPressError.fromJson(json.decode(response.body));
+        WordPressError err = WordPressError.fromJson(json.decode(response.body));
         throw err;
       } catch (e) {
         throw new WordPressError(message: response.body);
@@ -968,8 +940,7 @@ class WordPress {
       return json.decode(response.body);
     } else {
       try {
-        WordPressError err =
-            WordPressError.fromJson(json.decode(response.body));
+        WordPressError err = WordPressError.fromJson(json.decode(response.body));
         throw err;
       } catch (e) {
         throw new WordPressError(message: response.body);
@@ -983,10 +954,8 @@ class WordPress {
     final StringBuffer url = new StringBuffer(_baseUrl + URL_USERS);
 
     HttpClient httpClient = new HttpClient();
-    HttpClientRequest request =
-        await httpClient.postUrl(Uri.parse(url.toString()));
-    request.headers
-        .set(HttpHeaders.contentTypeHeader, "application/json; charset=UTF-8");
+    HttpClientRequest request = await httpClient.postUrl(Uri.parse(url.toString()));
+    request.headers.set(HttpHeaders.contentTypeHeader, "application/json; charset=UTF-8");
     request.headers.set(HttpHeaders.acceptHeader, "application/json");
     request.headers.set('Authorization', "${_urlHeader['Authorization']}");
 
@@ -1017,10 +986,8 @@ class WordPress {
     final StringBuffer url = new StringBuffer(_baseUrl + URL_POSTS + '/$id');
 
     HttpClient httpClient = new HttpClient();
-    HttpClientRequest request =
-        await httpClient.postUrl(Uri.parse(url.toString()));
-    request.headers
-        .set(HttpHeaders.contentTypeHeader, "application/json; charset=UTF-8");
+    HttpClientRequest request = await httpClient.postUrl(Uri.parse(url.toString()));
+    request.headers.set(HttpHeaders.contentTypeHeader, "application/json; charset=UTF-8");
     request.headers.set(HttpHeaders.acceptHeader, "application/json");
     request.headers.set('Authorization', "${_urlHeader['Authorization']}");
 
@@ -1042,15 +1009,12 @@ class WordPress {
     return false;
   }
 
-  Future<bool> updateComment(
-      {required int id, required Comment comment}) async {
+  Future<bool> updateComment({required int id, required Comment comment}) async {
     final StringBuffer url = new StringBuffer(_baseUrl + URL_COMMENTS + '/$id');
 
     HttpClient httpClient = new HttpClient();
-    HttpClientRequest request =
-        await httpClient.postUrl(Uri.parse(url.toString()));
-    request.headers
-        .set(HttpHeaders.contentTypeHeader, "application/json; charset=UTF-8");
+    HttpClientRequest request = await httpClient.postUrl(Uri.parse(url.toString()));
+    request.headers.set(HttpHeaders.contentTypeHeader, "application/json; charset=UTF-8");
     request.headers.set(HttpHeaders.acceptHeader, "application/json");
     request.headers.set('Authorization', "${_urlHeader['Authorization']}");
 
@@ -1076,10 +1040,8 @@ class WordPress {
     final StringBuffer url = new StringBuffer(_baseUrl + URL_USERS + '/$id');
 
     HttpClient httpClient = new HttpClient();
-    HttpClientRequest request =
-        await httpClient.postUrl(Uri.parse(url.toString()));
-    request.headers
-        .set(HttpHeaders.contentTypeHeader, "application/json; charset=UTF-8");
+    HttpClientRequest request = await httpClient.postUrl(Uri.parse(url.toString()));
+    request.headers.set(HttpHeaders.contentTypeHeader, "application/json; charset=UTF-8");
     request.headers.set(HttpHeaders.acceptHeader, "application/json");
     request.headers.set('Authorization', "${_urlHeader['Authorization']}");
 
@@ -1113,10 +1075,8 @@ class WordPress {
     final StringBuffer url = new StringBuffer(_baseUrl + URL_POSTS + '/$id');
 
     HttpClient httpClient = new HttpClient();
-    HttpClientRequest request =
-        await httpClient.deleteUrl(Uri.parse(url.toString()));
-    request.headers
-        .set(HttpHeaders.contentTypeHeader, "application/json; charset=UTF-8");
+    HttpClientRequest request = await httpClient.deleteUrl(Uri.parse(url.toString()));
+    request.headers.set(HttpHeaders.contentTypeHeader, "application/json; charset=UTF-8");
     request.headers.set(HttpHeaders.acceptHeader, "application/json");
     request.headers.set('Authorization', "${_urlHeader['Authorization']}");
 
@@ -1141,10 +1101,8 @@ class WordPress {
     final StringBuffer url = new StringBuffer(_baseUrl + URL_COMMENTS + '/$id');
 
     HttpClient httpClient = new HttpClient();
-    HttpClientRequest request =
-        await httpClient.deleteUrl(Uri.parse(url.toString()));
-    request.headers
-        .set(HttpHeaders.contentTypeHeader, "application/json; charset=UTF-8");
+    HttpClientRequest request = await httpClient.deleteUrl(Uri.parse(url.toString()));
+    request.headers.set(HttpHeaders.contentTypeHeader, "application/json; charset=UTF-8");
     request.headers.set(HttpHeaders.acceptHeader, "application/json");
     request.headers.set('Authorization', "${_urlHeader['Authorization']}");
 
@@ -1172,15 +1130,12 @@ class WordPress {
     final StringBuffer url = new StringBuffer(_baseUrl + URL_USERS + '/$id');
 
     HttpClient httpClient = new HttpClient();
-    HttpClientRequest request =
-        await httpClient.deleteUrl(Uri.parse(url.toString()));
-    request.headers
-        .set(HttpHeaders.contentTypeHeader, "application/json; charset=UTF-8");
+    HttpClientRequest request = await httpClient.deleteUrl(Uri.parse(url.toString()));
+    request.headers.set(HttpHeaders.contentTypeHeader, "application/json; charset=UTF-8");
     request.headers.set(HttpHeaders.acceptHeader, "application/json");
     request.headers.set('Authorization', "${_urlHeader['Authorization']}");
 
-    request
-        .add(utf8.encode(json.encode({"reassign": reassign, "force": true})));
+    request.add(utf8.encode(json.encode({"reassign": reassign, "force": true})));
     HttpClientResponse response = await request.close();
 
     if (response.statusCode >= 200 && response.statusCode < 300) {
@@ -1223,8 +1178,7 @@ class WordPress {
       return Comment.fromJson(json.decode(response.body));
     } else {
       try {
-        WordPressError err =
-            WordPressError.fromJson(json.decode(response.body));
+        WordPressError err = WordPressError.fromJson(json.decode(response.body));
         throw err;
       } catch (e) {
         throw new WordPressError(message: response.body);
